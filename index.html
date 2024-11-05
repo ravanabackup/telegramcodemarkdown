@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram Code Markdown</title>
+    <style>
+        /* Vibrant Material Design inspired styles */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #ff8a65, #ff5252);
+        }
+        .container {
+            text-align: center;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
+            width: 350px;
+            max-width: 90%;
+        }
+        h2 {
+            color: #ff5252;
+            margin-bottom: 20px;
+        }
+        label {
+            font-size: 14px;
+            color: #333333;
+            margin-top: 10px;
+            display: block;
+            text-align: left;
+        }
+        input, textarea, button {
+            width: 100%;
+            margin: 10px 0;
+            padding: 12px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        input, textarea {
+            border: 1px solid #ddd;
+        }
+        input:focus, textarea:focus {
+            border-color: #ff5252;
+            box-shadow: 0 0 8px rgba(255, 82, 82, 0.3);
+        }
+        button {
+            background-color: #ff5252;
+            color: #ffffff;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #e64a19;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Telegram Code Markdown</h2>
+    
+    <label for="syntax">Syntax</label>
+    <input type="text" id="syntax" placeholder="Enter syntax (e.g., Text123, Python3)" required>
+
+    <label for="text">Text</label>
+    <textarea id="text" rows="4" placeholder="Enter your text" required></textarea>
+
+    <button onclick="generateAndCopy()">Submit</button>
+    <button onclick="generateRandom()">Generate Random</button>
+</div>
+
+<script>
+    function generateAndCopy() {
+        const syntax = document.getElementById('syntax').value.trim();
+        const text = document.getElementById('text').value.trim();
+
+        // Validate syntax to ensure it is a single alphanumeric word
+        if (!/^[a-zA-Z0-9]+$/.test(syntax)) {
+            alert("Please enter a single alphanumeric word for syntax.");
+            return;
+        }
+        
+        if (!text) {
+            alert("Please enter some text.");
+            return;
+        }
+
+        // Generate the formatted text with user-defined syntax highlighting
+        const formattedText = `\`\`\`${syntax}\n${text}\n\`\`\``;
+
+        // Copy the formatted text to the clipboard
+        navigator.clipboard.writeText(formattedText).then(() => {
+            alert("Text copied to clipboard!");
+        }).catch(err => {
+            console.error("Failed to copy text: ", err);
+        });
+    }
+
+    function generateRandom() {
+        // Generate 48 random numbers for the syntax
+        const syntaxNumbers = Array.from({ length: 48 }, () => Math.floor(Math.random() * 10)).join('');
+        document.getElementById('syntax').value = syntaxNumbers;
+
+        // Generate 4096 random numbers for the text
+        const textNumbers = Array.from({ length: 4096 }, () => Math.floor(Math.random() * 10)).join('');
+        document.getElementById('text').value = textNumbers;
+    }
+</script>
+
+</body>
+</html>

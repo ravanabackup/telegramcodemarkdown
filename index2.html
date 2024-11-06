@@ -80,6 +80,12 @@
             display: none;
             font-size: 14px;
         }
+        .info-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+            text-align: left;
+        }
     </style>
 </head>
 <body>
@@ -88,13 +94,14 @@
     <h2>Telegram Code Markdown</h2>
 
     <label for="version">Select Version</label>
-    <select id="version">
+    <select id="version" onchange="updateSyntaxPlaceholder()">
         <option value="pc">PC Version</option>
         <option value="android">Android Version</option>
     </select>
     
     <label for="syntax">Syntax</label>
     <input type="text" id="syntax" placeholder="Enter syntax (e.g., Text123, Python3)" required>
+    <div id="syntaxInfo" class="info-text">PC Version: Alphanumeric characters only</div>
 
     <label for="text">Text</label>
     <textarea id="text" rows="4" placeholder="Enter your text" required></textarea>
@@ -107,6 +114,20 @@
 </div>
 
 <script>
+    function updateSyntaxPlaceholder() {
+        const version = document.getElementById('version').value;
+        const syntaxInput = document.getElementById('syntax');
+        const syntaxInfo = document.getElementById('syntaxInfo');
+        
+        if (version === "pc") {
+            syntaxInput.placeholder = "Enter syntax (alphanumeric only)";
+            syntaxInfo.textContent = "PC Version: Alphanumeric characters only";
+        } else {
+            syntaxInput.placeholder = "Enter any syntax (emojis, special chars allowed)";
+            syntaxInfo.textContent = "Android Version: All characters allowed";
+        }
+    }
+
     function showMessage(messageId, text, duration = 3000) {
         const element = document.getElementById(messageId);
         element.textContent = text;
@@ -140,15 +161,10 @@
             return;
         }
 
-        // Version-specific validation
+        // Only validate PC version - Android version accepts anything
         if (version === "pc") {
             if (!/^[a-zA-Z0-9]+$/.test(syntax)) {
                 showError('PC Version requires alphanumeric characters only.');
-                return;
-            }
-        } else {
-            if (!/^[\p{L}\p{N}\p{P}\p{S}\s]+$/u.test(syntax)) {
-                showError('Invalid syntax format for Android Version.');
                 return;
             }
         }
@@ -172,6 +188,12 @@
         }
     }
 
+    function generateRandomString(length, chars) {
+        return Array.from({ length }, () => 
+            chars.charAt(Math.floor(Math.random() * chars.length))
+        ).join('');
+    }
+
     function generateRandom() {
         try {
             const version = document.getElementById('version').value;
@@ -181,31 +203,36 @@
             if (version === "pc") {
                 // Generate random alphanumeric string
                 const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-                syntaxValue = Array.from({ length: 48 }, () => 
-                    chars.charAt(Math.floor(Math.random() * chars.length))
-                ).join('');
+                syntaxValue = generateRandomString(48, chars);
             } else {
-                // Generate random emojis and special characters for Android
-                const emojiRange = Array.from({ length: 48 }, () => 
-                    String.fromCodePoint(0x1F600 + Math.floor(Math.random() * 80))
-                ).join('');
-                syntaxValue = emojiRange;
+                // For Android, generate a mix of characters, emojis, and special chars
+                const specialChars = '!@#$%^&*()_+-=[]{}|;:,.<>?/~`';
+                const emojis = '😀😁😂🤣😃😄😅😆😉😊😋😎😍😘😗😙😚☺️🙂🤗🤩🤔🤨😐😑😶🙄😏😣😥😮🤐😯😪😫😴😌😛😜😝🤤😒😓😔😕🙃🤑😲☹️🙁😖😞😟😤😢😭😦😧😨😩🤯😬😰😱😳🤪😵😡😠🤬😷🤒🤕🤢🤮🤧😇🤠🤡🤥🤫🤭🧐🤓';
+                const letterNumbers = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+                
+                // Mix different types of characters
+                syntaxValue = 
+                    generateRandomString(16, emojis) +
+                    generateRandomString(16, specialChars) +
+                    generateRandomString(16, letterNumbers);
             }
 
-            // Generate random numbers for text
-            const textNumbers = Array.from({ length: 4096 }, () => 
-                Math.floor(Math.random() * 10)
-            ).join('');
+            // Generate random text (mix of numbers and letters)
+            const textChars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+            const textValue = generateRandomString(4096, textChars);
 
             // Set the values
             document.getElementById('syntax').value = syntaxValue;
-            document.getElementById('text').value = textNumbers;
+            document.getElementById('text').value = textValue;
             showSuccess('Random values generated!');
         } catch (error) {
             showError('Error generating random values.');
             console.error('Random generation error:', error);
         }
     }
+
+    // Initialize placeholder text
+    updateSyntaxPlaceholder();
 </script>
 
 </body>

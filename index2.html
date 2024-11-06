@@ -47,6 +47,7 @@
         }
         input, textarea, select {
             border: 1px solid #ddd;
+            background-color: #ffffff;
         }
         input:focus, textarea:focus, select:focus {
             border-color: #1976d2;
@@ -62,9 +63,22 @@
             text-transform: uppercase;
             border-radius: 8px;
             transition: background-color 0.3s ease;
+            margin-bottom: 10px;
         }
         button:hover {
             background-color: #1565c0;
+        }
+        .success-message {
+            color: #4caf50;
+            margin-top: 10px;
+            display: none;
+            font-size: 14px;
+        }
+        .error-message {
+            color: #f44336;
+            margin-top: 10px;
+            display: none;
+            font-size: 14px;
         }
     </style>
 </head>
@@ -85,64 +99,112 @@
     <label for="text">Text</label>
     <textarea id="text" rows="4" placeholder="Enter your text" required></textarea>
 
-    <button onclick="generateAndCopy()">Submit</button>
+    <button onclick="generateAndCopy()">Generate & Copy</button>
     <button onclick="generateRandom()">Generate Random</button>
+
+    <div id="successMessage" class="success-message">Text copied to clipboard!</div>
+    <div id="errorMessage" class="error-message"></div>
 </div>
 
 <script>
+    function showMessage(messageId, text, duration = 3000) {
+        const element = document.getElementById(messageId);
+        element.textContent = text;
+        element.style.display = 'block';
+        setTimeout(() => {
+            element.style.display = 'none';
+        }, duration);
+    }
+
+    function showError(text) {
+        showMessage('errorMessage', text);
+    }
+
+    function showSuccess(text) {
+        showMessage('successMessage', text);
+    }
+
     function generateAndCopy() {
         const syntax = document.getElementById('syntax').value.trim();
         const text = document.getElementById('text').value.trim();
         const version = document.getElementById('version').value;
 
-        // Validation based on selected version
-        if (version === "pc") {
-            // PC Version: Allow only alphanumeric characters
-            if (!/^[a-zA-Z0-9]+$/.test(syntax)) {
-                alert("PC Version requires a single alphanumeric word for syntax.");
-                return;
-            }
-        } else {
-            // Android Version: Allow Unicode, emojis, special characters, and spaces
-            if (!/^[\p{L}\p{N}\p{P}\p{S}\s]+$/u.test(syntax)) {
-                alert("Android Version allows Unicode, emojis, special characters, and spaces.");
-                return;
-            }
-        }
-        
-        if (!text) {
-            alert("Please enter some text.");
+        // Validation
+        if (!syntax) {
+            showError('Please enter a syntax value.');
             return;
         }
 
-        // Generate the formatted text with user-defined syntax highlighting
-        const formattedText = \\\${syntax}\n${text}\n\\\``;
+        if (!text) {
+            showError('Please enter some text.');
+            return;
+        }
 
-        // Copy the formatted text to the clipboard
-        navigator.clipboard.writeText(formattedText).then(() => {
-            alert("Text copied to clipboard!");
-        }).catch(err => {
-            console.error("Failed to copy text: ", err);
-        });
+        // Version-specific validation
+        if (version === "pc") {
+            if (!/^[a-zA-Z0-9]+$/.test(syntax)) {
+                showError('PC Version requires alphanumeric characters only.');
+                return;
+            }
+        } else {
+            if (!/^[\p{L}\p{N}\p{P}\p{S}\s]+$/u.test(syntax)) {
+                showError('Invalid syntax format for Android Version.');
+                return;
+            }
+        }
+
+        try {
+            // Generate the formatted text
+            const formattedText = `\`\`\`${syntax}\n${text}\n\`\`\``;
+
+            // Copy to clipboard
+            navigator.clipboard.writeText(formattedText)
+                .then(() => {
+                    showSuccess('Text copied to clipboard!');
+                })
+                .catch(err => {
+                    showError('Failed to copy to clipboard. Please copy manually.');
+                    console.error('Clipboard error:', err);
+                });
+        } catch (error) {
+            showError('An error occurred while generating the text.');
+            console.error('Generation error:', error);
+        }
     }
 
     function generateRandom() {
-        // Generate random numbers for Syntax and Text based on selected version
-        const version = document.getElementById('version').value;
+        try {
+            const version = document.getElementById('version').value;
+            let syntaxValue = '';
 
-        // Syntax for PC Version: 48 random alphanumeric characters
-        if (version === "pc") {
-            const syntaxNumbers = Array.from({ length: 48 }, () => Math.floor(Math.random() * 10)).join('');
-            document.getElementById('syntax').value = syntaxNumbers;
-        } else {
-            // Syntax for Android Version: 48 random Unicode characters, may include emojis
-            const randomChars = Array.from({ length: 48 }, () => String.fromCharCode(0x1F600 + Math.floor(Math.random() * 80))).join('');
-            document.getElementById('syntax').value = randomChars;
+            // Generate syntax based on version
+            if (version === "pc") {
+                // Generate random alphanumeric string
+                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+                syntaxValue = Array.from({ length: 48 }, () => 
+                    chars.charAt(Math.floor(Math.random() * chars.length))
+                ).join('');
+            } else {
+                // Generate random emojis and special characters for Android
+                const emojiRange = Array.from({ length: 48 }, () => 
+                    String.fromCodePoint(0x1F600 + Math.floor(Math.random() * 80))
+                ).join('');
+                syntaxValue = emojiRange;
+            }
+
+            // Generate random numbers for text
+            const textNumbers = Array.from({ length: 4096 }, () => 
+                Math.floor(Math.random() * 10)
+            ).join('');
+
+            // Set the values
+            document.getElementById('syntax').value = syntaxValue;
+            document.getElementById('text').value = textNumbers;
+            showSuccess('Random values generated!');
+        } catch (error) {
+            showError('Error generating random values.');
+            console.error('Random generation error:', error);
         }
-
-        // Generate 4096 random numbers for the text field
-        const textNumbers = Array.from({ length: 4096 }, () => Math.floor(Math.random() * 10)).join('');
-        document.getElementById('text').value = textNumbers;
     }
 </script>
 
